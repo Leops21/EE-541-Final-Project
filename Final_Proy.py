@@ -1,3 +1,4 @@
+# %% 
 # importing libraries 
 import os, math, random
 import numpy as np
@@ -9,6 +10,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
+# %% 
 # fixed randomness for reproducible runs
 seed = 42  # random
 random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
@@ -17,6 +19,7 @@ torch.backends.cudnn.benchmark = True
 
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu") # device
 
+# %% 
 # project configuration
 data_dir = "./Data" # folder with NASA files
 fd_id = "FD001"   # dataset split to use
@@ -35,6 +38,7 @@ print(os.listdir("./Data"))
 # 3 operating settings + 21 sensors (we drop constant sensors later)
 cols_keep = list(range(3, 26))  # keep columns in this range 
 
+# %% 
 # loads datset 
 def load_fd_split(data_dir: str, fd_id: str):
     """
@@ -87,3 +91,5 @@ X_te_full = (X_te_full - mu) / sd
 # re-attach engine id + cycle columns 
 train_rec = np.concatenate([train_raw[:, [idx_id, idx_t]], X_tr_full], axis=1)  # [id, t, feats...]
 test_rec  = np.concatenate([test_raw[:,  [idx_id, idx_t]], X_te_full], axis=1)
+
+# %% 
