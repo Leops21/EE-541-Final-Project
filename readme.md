@@ -6,7 +6,7 @@ Team Members:
 - Leonardo J Robles, lroblesa@usc.edu
 - Yueshan Huang, yueshanh@usc.edu
 
----
+
 ## Requirements
 
 - **Python** 3.8+  
