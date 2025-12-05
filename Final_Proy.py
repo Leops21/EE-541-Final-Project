@@ -35,3 +35,55 @@ print(os.listdir("./Data"))
 # 3 operating settings + 21 sensors (we drop constant sensors later)
 cols_keep = list(range(3, 26))  # keep columns in this range 
 
+# loads datset 
+def load_fd_split(data_dir: str, fd_id: str):
+    """
+    loads train/test and RUL files for a given fd subset
+   # Input:  data_dir and fd_id 'FD001' ...
+   # Output: train_raw [Ntrain, 26], test_raw [Ntest, 26], rul_true [Neng_test]
+""" 
+    tr_path = os.path.join(data_dir, f"train_{fd_id}.txt")
+    te_path = os.path.join(data_dir, f"test_{fd_id}.txt")
+    ru_path = os.path.join(data_dir, f"RUL_{fd_id}.txt")
+
+    # space-separated
+    train_raw = np.loadtxt(tr_path)
+    test_raw  = np.loadtxt(te_path)
+    rul_true  = np.loadtxt(ru_path).reshape(-1)  # only one RUL per test engine
+    
+    return train_raw, test_raw, rul_true
+
+train_raw, test_raw, rul_true = load_fd_split(data_dir, fd_id)
+
+
+# feature  extraction and normalization
+# raw columns: [0:id, 1:cycle, 2:setting1, 3:setting2, ..., sensors...]
+
+idx_id, idx_t = 0, 1
+feat_idx = np.array(cols_keep) - 1  # convert to 0 based
+
+# extracts features only
+X_tr_full = train_raw[:, feat_idx]   # features for train
+X_te_full = test_raw[:,  feat_idx]  # features for test
+eng_tr = train_raw[:, idx_id].astype(int)
+eng_te = test_raw[:,  idx_id].astype(int)
+t_tr = train_raw[:, idx_t].astype(int)
+t_te = test_raw[:,  idx_t].astype(int)
+
+# drops constant sensors (zero variance)
+var_tr = X_tr_full.var(axis=0)
+keep_mask = var_tr > 1e-6
+X_tr_full = X_tr_full[:, keep_mask]
+X_te_full = X_te_full[:, keep_mask]
+feat_names_kept = np.arange(feat_idx.size)[keep_mask]
+n_feat = X_tr_full.shape[1]  # number of kept features
+
+# normalizes using traning stats only
+mu = X_tr_full.mean(axis=0)    # mean per feature
+sd = X_tr_full.std(axis=0) + 1e-8   # std per feature
+X_tr_full = (X_tr_full - mu) / sd
+X_te_full = (X_te_full - mu) / sd
+
+# re-attach engine id + cycle columns 
+train_rec = np.concatenate([train_raw[:, [idx_id, idx_t]], X_tr_full], axis=1)  # [id, t, feats...]
+test_rec  = np.concatenate([test_raw[:,  [idx_id, idx_t]], X_te_full], axis=1)
