@@ -408,6 +408,121 @@ if best_state is not None:
     model.load_state_dict({k: v.to(dev) for k,v in best_state.items()})
 
 # %%
+# plotting training curves
+plt.figure(figsize=(7,4))
+plt.plot(hist["ep"], hist["tr_rmse"], label="train RMSE")
+plt.plot(hist["ep"], hist["va_rmse"], label="val RMSE")
+plt.xlabel("epoch")
+plt.ylabel("RMSE")
+plt.title("RMSE vs epoch")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(7,4))
+plt.plot(hist["ep"], hist["tr_mae"], label="train MAE")
+plt.plot(hist["ep"], hist["va_mae"], label="val MAE")
+plt.xlabel("epoch")
+plt.ylabel("MAE")
+plt.title("MAE vs epoch")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
 # %%
+# Test evaluation
+te_loss, te_rmse, te_mae = epoch_pass(model, te_ld, train=False)
+print(f"\nFD001 Test  | RMSE: {te_rmse:.2f} | MAE: {te_mae:.2f}")
+
+# prediction scatter plot
+model.eval()
+with torch.no_grad():
+    yhat_list = []
+    for xb, yb in te_ld:
+        yhat_list.append(model(xb.to(dev)).cpu().numpy())
+yhat = np.concatenate(yhat_list).ravel()
+
+plt.figure(figsize=(5,5))
+plt.scatter(ytest, yhat, s=14, alpha=0.7)
+mx = max(ytest.max(), yhat.max())
+plt.plot([0,mx],[0,mx],'k--',lw=1)
+plt.xlabel("True RUL")
+plt.ylabel("Predicted RUL")
+plt.title("True vs Predicted RUL FD001")
+plt.tight_layout()
+plt.show()
+
+# Error vs true RUL
+err = yhat - ytest
+plt.figure(figsize=(6,4))
+plt.scatter(ytest, np.abs(err), s=14, alpha=0.7)
+plt.xlabel("True RUL")
+plt.ylabel("Prediction Error")
+plt.title("Error vs True RUL")
+plt.tight_layout()
+plt.show()
+
 # %%
+# trajectory of couple training engines 
+def plot_engine_trajectories(rec: np.ndarray, engines: list, w: int, model: nn.Module, n_show=3):
+    """
+    plots predicted RUL vs true RUL over time for selected engines
+    """
+    
+    model.eval()
+    engines = engines[:n_show]
+    plt.figure(figsize=(7, 4*len(engines)))
+    for k, e in enumerate(engines, 1):
+        rows = rec[rec[:,0].astype(int)==e]
+        feats = rows[:,2:]
+        t_e = rows[:,1].astype(int)
+        t_last = t_e.max()
+        true_rul = t_last - t_e
+        X_e, y_e = windows_from_engine(rows, w)
+        X_e = np.transpose(X_e, (0,2,1))
+        with torch.no_grad():
+            yh = model(torch.from_numpy(X_e).float().to(dev)).cpu().numpy().ravel()
+        # align prediction times (start at w-1)
+        tt = t_e[w-1:]
+        plt.subplot(len(engines),1,k)
+        plt.plot(tt, true_rul[w-1:], label="true RUL")
+        plt.plot(tt, yh, label="pred RUL")
+        plt.gca().invert_xaxis()  # for decreasing cycles remaining
+        plt.xlabel("cycle"); plt.ylabel("RUL")
+        plt.title(f"Engine {e}")
+        plt.legend()
+    plt.tight_layout(); plt.show()
+
+# pick train engines to visualize
+some_eng = [1, 8, 15, 36]
+plot_engine_trajectories(train_rec, some_eng, w=w_size, model=model, n_show=3)
+
 # %%
+def precision_at_k(y_true, y_pred, k=20):
+    """
+    Precision@k for regression.
+    Returns the % of predictions within ±k cycles
+    """
+    err = np.abs(y_pred - y_true)
+    return np.mean(err <= k)
+precision10 = precision_at_k(ytest, yhat, k=10)
+precision20 = precision_at_k(ytest, yhat, k=20)
+precision30 = precision_at_k(ytest, yhat, k=30)
+
+print ("Precision at k cycles:\n")
+print(f"Precision@10: {precision10*100:.1f}%")
+print(f"Precision@20: {precision20*100:.1f}%")
+print(f"Precision@30: {precision30*100:.1f}%")
+
+
+# %%
+ks = range(1,51)
+precisions = [precision_at_k(ytest, yhat, k) for k in ks]
+
+plt.figure(figsize=(6,4))
+plt.plot(ks, precisions)
+plt.xlabel("Tolerance (k cycles)")
+plt.ylabel("Precision@k")
+plt.title("Precision vs Tolerance")
+plt.grid(True)
+plt.show()
