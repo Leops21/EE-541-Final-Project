@@ -6,5 +6,17 @@ Team Members:
 - Leonardo J Robles, lroblesa@usc.edu
 - Yueshan Huang, yueshanh@usc.edu
 
-How to run ...
-xc
+---
+## Requirements
+
+- **Python** 3.8+  
+- The following Python packages:
+  - `torch` (with CUDA support if you want to train on GPU)
+  - `numpy`
+  - `matplotlib`
+  - `scikit-learn`
+ 
+You can install them with:
+
+```bash
+pip install torch numpy matplotlib scikit-learn
