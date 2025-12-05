@@ -1,3 +1,26 @@
+# %% [markdown]
+# # Remaining Useful Life Prediction
+#
+# Remaining useful life (RUL) prediction estimates how many operational cycles remain  
+# before a machine fails. This is central to predictive maintenance—scheduling repairs  
+# before failure occurs rather than reacting to breakdowns or replacing components on  
+# fixed schedules. The challenge lies in learning degradation patterns from multivariate  
+# sensor data where failure modes are complex and equipment operates under varying  
+# conditions.
+#
+# The NASA Turbofan Engine Degradation Simulation Dataset (C-MAPSS) contains run-to-  
+# failure data from turbofan engines. The dataset includes four subsets (FD001, FD002,  
+# FD003, FD004) with increasing complexity based on operating conditions and failure  
+# modes. Each engine runs until failure in the training set, providing complete  
+# degradation trajectories. The test set provides partial trajectories and you must  
+# predict RUL at the final observed timestep.
+
+# %% [markdown]
+# # Suggested Approach 
+from IPython.display import Image, display
+display(Image(filename="img1.png"))
+
+
 # %% 
 # importing libraries 
 import os, math, random
@@ -9,6 +32,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+print ("libraries imported succesfully")
 
 # %% 
 # fixed randomness for reproducible runs
@@ -93,3 +117,49 @@ train_rec = np.concatenate([train_raw[:, [idx_id, idx_t]], X_tr_full], axis=1)  
 test_rec  = np.concatenate([test_raw[:,  [idx_id, idx_t]], X_te_full], axis=1)
 
 # %% 
+# compute RUL for training rows
+
+def compute_train_rul(rec: np.ndarray):
+    """
+    Computes Remaining Useful Life (RUL) for each row of the TRAIN set
+    for every engine: RUL = (last cycle) - (current cycle)
+   """
+   
+    eng = rec[:, 0].astype(int)
+    t   = rec[:, 1].astype(int)
+    rul = np.zeros_like(t)
+    
+    for e in np.unique(eng):
+        m = (eng == e)
+        t_e = t[m]
+        t_last = t_e.max()
+        rul[m] = t_last - t_e
+        
+    return rul
+
+# extracts last rows for TEST set
+def compute_test_last_windows(rec: np.ndarray, rul_true: np.ndarray):
+    """
+    For test set:
+    1 extract one final row per engine
+    2 return those rows + their true RUL
+    3 this is the window to make predictions on
+    """ 
+    
+    eng = rec[:, 0].astype(int)
+    t   = rec[:, 1].astype(int)
+    engines = np.unique(eng)
+    rows_last = []
+    
+    for i, e in enumerate(engines):
+        m = eng == e
+        idx = np.argmax(t[m]) #  last cycle idx
+        rows_last.append(rec[m][idx])
+    y_true = rul_true.copy()
+    
+    return rows_last, y_true
+
+y_tr_full = compute_train_rul(train_rec)  # per row RUL in train
+
+# %%
+# %%
