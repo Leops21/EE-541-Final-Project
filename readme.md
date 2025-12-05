@@ -20,6 +20,7 @@ You can install them with:
 
 ```bash
 pip install torch numpy matplotlib scikit-learn
+```
 
 ## Project structure (expected):
 .
@@ -29,3 +30,12 @@ pip install torch numpy matplotlib scikit-learn
     ├── train_FD001.txt
     ├── test_FD001.txt
     └── RUL_FD001.txt
+
+## How to Run
+- Open a terminal in the directory where Final_prot.py is located.
+- Run:
+- 
+```bash
+python Final_prot.py
+```
+  
