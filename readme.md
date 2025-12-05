@@ -20,3 +20,12 @@ You can install them with:
 
 ```bash
 pip install torch numpy matplotlib scikit-learn
+
+## Project structure (expected):
+.
+├── Final_prot.py
+├── img1.png          # optional, only for displaying a figure in notebooks
+└── Data
+    ├── train_FD001.txt
+    ├── test_FD001.txt
+    └── RUL_FD001.txt
