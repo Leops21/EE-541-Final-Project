@@ -32,9 +32,9 @@ pip install torch numpy matplotlib scikit-learn
     └── RUL_FD001.txt
 
 ## How to Run
-- Open a terminal in the directory where Final_prot.py is located.
-- Run:
-- 
+  Open a terminal in the directory where Final_prot.py is located.
+  Run:
+
 ```bash
 python Final_prot.py
 ```
