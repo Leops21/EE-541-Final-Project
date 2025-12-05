@@ -145,7 +145,6 @@ def compute_test_last_windows(rec: np.ndarray, rul_true: np.ndarray):
     2 return those rows + their true RUL
     3 this is the window to make predictions on
     """ 
-    
     eng = rec[:, 0].astype(int)
     t   = rec[:, 1].astype(int)
     engines = np.unique(eng)
