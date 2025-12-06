@@ -22,21 +22,18 @@ You can install them with:
 pip install torch numpy matplotlib scikit-learn
 ```
 
-## Project structure (expected):
-.
-├── Final_prot.py
-├── img1.png          # optional, only for displaying a figure in notebooks
-└── Data
-    ├── train_FD001.txt
-    ├── test_FD001.txt
-    └── RUL_FD001.txt
+## Project structure:
+- Final_Proy.py contains the source code
+- img1.png    used to for displaying a figure in jupytext
+- Data   folder
+- final.ipynb  final project run on a jupyter notebook 
 
 ## How to Run
-Open a terminal in the directory where Final_prot.py is located.
+- Open a terminal in the directory where Final_Proy.py is located.
 
 Run:
 
 ```bash
-python Final_prot.py
+python Final_Proy.py
 ```
   
