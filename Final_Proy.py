@@ -306,6 +306,7 @@ class Cnn1D(nn.Module):
             nn.BatchNorm1d(c2),
             nn.ReLU(inplace=True),
             nn.MaxPool1d(2),
+            nn.Dropout(0.2),
 
             # Block 3 (n_feat = 256)
             nn.Conv1d(c2, c3, kernel_size=3, padding=1, dilation=4),
@@ -315,6 +316,8 @@ class Cnn1D(nn.Module):
             nn.Conv1d(c3, c3, kernel_size=3, padding=1, dilation=4),
             nn.BatchNorm1d(c3),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.2),
+
             nn.AdaptiveAvgPool1d(1), 
         )
         self.head = nn.Linear(c3, 1)  # linear output (no activation)
@@ -521,8 +524,8 @@ precisions = [precision_at_k(ytest, yhat, k) for k in ks]
 
 plt.figure(figsize=(6,4))
 plt.plot(ks, precisions)
-plt.xlabel("Tolerance (k cycles)")
+plt.xlabel("Tolerance k cycles")
 plt.ylabel("Precision@k")
-plt.title("Precision vs Tolerance")
+plt.title("Precision Curve")
 plt.grid(True)
 plt.show()
