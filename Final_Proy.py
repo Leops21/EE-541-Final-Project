@@ -297,11 +297,11 @@ class Cnn1D(nn.Module):
             nn.MaxPool1d(2),  
 
             # Block 2 (n_feat = 128)
-            nn.Conv1d(c1, c2, kernel_size=5, padding=2, dilation=2),
+            nn.Conv1d(c1, c2, kernel_size=5, padding=2, dilation=4),
             nn.BatchNorm1d(c2),
             nn.ReLU(inplace=True),
 
-            nn.Conv1d(c2, c2, kernel_size=3, padding=1, dilation=2),
+            nn.Conv1d(c2, c2, kernel_size=5, padding=1, dilation=4),
             nn.BatchNorm1d(c2),
             nn.ReLU(inplace=True),
             nn.MaxPool1d(2),
