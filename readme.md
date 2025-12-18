@@ -2,6 +2,7 @@
 
 This is our final project for EE-541 intro to deep learning
 
+## group 01
 Team Members: 
 - Leonardo J Robles, lroblesa@usc.edu
 - Yueshan Huang, yueshanh@usc.edu
